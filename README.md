@@ -1,4 +1,4 @@
-# Sanni Home assitance IOT
+# CTRLHOUSE
 
 ## Team Members
 - Student 1: Annie Yang
