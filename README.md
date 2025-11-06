@@ -32,11 +32,10 @@ It integrates hardware and software to monitor home conditions, detect intrusion
 ### Real-Time Monitoring
 - Detect motion using PIR sensor
 - Capture last motion event timestamp and optionally trigger Pi Camera
-- Monitor temperature, humidity, and light level
+- Monitor temperature, humidity, and light 
 
 ### Actuator Control
 - Toggle LEDs, fan, and relay devices remotely
-- Party mode: random LED patterns (demo feature)
 
 ### Cloud Connectivity
 - MQTT integration with **Adafruit IO**
@@ -67,7 +66,12 @@ It integrates hardware and software to monitor home conditions, detect intrusion
 
 
 ---
+## Reflection
 
+During this project, we successfully implemented a Home Automation and Security System using a Raspberry Pi. The system was able to monitor motion, temperature, humidity, and light levels while controlling actuators remotely through an MQTT dashboard.
+
+The hardest part was integrating all modules—especially getting the PIR motion detection and camera capture working reliably together. Handling data logging and ensuring files were properly uploaded to the cloud also required careful testing.
+If we were to improve the project, we would improve error handling, improve organizations with files and folders and optimize data uploads.
 ## Software Setup
 
 1. **Clone the repository:**
