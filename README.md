@@ -51,7 +51,7 @@ It integrates hardware and software to monitor home conditions, detect intrusion
 ---
 
 ## Hardware Setup
-- Raspberry Pi 4B 2GB+ with Raspberry Pi OS (64-bit)
+- Raspberry Pi 5 
 - GPIO pin connections:  
   - LED1 → GPIO 16  
   - LED2 → GPIO 23  
@@ -59,9 +59,12 @@ It integrates hardware and software to monitor home conditions, detect intrusion
   - Fan → GPIO 22  
   - Relay → GPIO 18  
   - PIR Motion Sensor → GPIO 17  
-  - DHT22 Sensor → GPIO 4  
+  - DHT11 Sensor → GPIO 4  
 - Pi Camera Module V2 (optional for motion capture)  
 - Wiring diagram and enclosure photos in `docs/`
+
+<img width="693" height="530" alt="image" src="https://github.com/user-attachments/assets/d308bb2b-50cd-406b-b4ad-c932085d19a1" />
+
 
 ---
 
