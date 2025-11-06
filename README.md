@@ -70,7 +70,7 @@ It integrates hardware and software to monitor home conditions, detect intrusion
 
 During this project, we successfully implemented a Home Automation and Security System using a Raspberry Pi. The system was able to monitor motion, temperature, humidity, and light levels while controlling actuators remotely through an MQTT dashboard.
 
-The hardest part was integrating all modules—especially getting the PIR motion detection and camera capture working reliably together and pushing the code to github.
+The hardest part was integrating all modules—especially getting the PIR motion detection and pushing the code to github.
 If we were to improve the project, we would improve error handling, improve organizations with files and folders and optimize data uploads.
 ## Software Setup
 
