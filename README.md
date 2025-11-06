@@ -1,4 +1,4 @@
-# IoT Home Automation & Security System
+# Sanni Home assitance IOT
 
 ## Team Members
 - Student 1: Annie Yang
