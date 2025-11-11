@@ -78,3 +78,5 @@ If we were to improve the project, we would improve error handling, improve orga
 ```bash
 git clone https://github.com/yourusername/IoT_HomeAutomation_Project.git
 cd IoT_HomeAutomation_Project
+python Lab8.py ( activate to collect sensors data )
+python Lab9.py ( use different modes to either switch lights, turn on the fan, & turn on the relay )
