@@ -10,7 +10,7 @@ It integrates hardware and software to monitor home conditions, detect intrusion
 
 **Sensors Used:**
 - PIR Motion Sensor (intrusion detection)
-- DHT22 Temperature & Humidity Sensor
+- DHT11 Temperature & Humidity Sensor
 - Light Sensor (LDR)
 
 **Actuators Used:**
@@ -59,8 +59,8 @@ It integrates hardware and software to monitor home conditions, detect intrusion
   - Relay → GPIO 18  
   - PIR Motion Sensor → GPIO 17  
   - DHT11 Sensor → GPIO 4  
-- Pi Camera Module V2 (optional for motion capture)  
-- Wiring diagram and enclosure photos in `docs/`
+- Pi Camera Module V2
+
 
 <img width="693" height="530" alt="image" src="https://github.com/user-attachments/assets/d308bb2b-50cd-406b-b4ad-c932085d19a1" />
 
@@ -78,5 +78,6 @@ If we were to improve the project, we would improve error handling, improve orga
 ```bash
 git clone https://github.com/yourusername/IoT_HomeAutomation_Project.git
 cd IoT_HomeAutomation_Project
-python Lab8.py ( activate to collect sensors data )
-python Lab9.py ( use different modes to either switch lights, turn on the fan, & turn on the relay )
+cd src
+python ModeControl.py ( activate to collect sensors data )
+python SecurityActivated.py ( use different modes to either switch lights, turn on the fan, & turn on the relay )
