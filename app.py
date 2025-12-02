@@ -18,7 +18,7 @@ aio = Client(os.getenv('ADAFRUIT_IO_USERNAME'), os.getenv('ADAFRUIT_IO_KEY'))
 MQTT_BROKER = "io.adafruit.com"
 MQTT_PORT = 1883
 USERNAME = "HappyAnnie"
-KEY = "aio_wobh35X1rdbZEBadRSvU7Mk9kQLz"
+KEY = "aio_mIfp76dqLin2BGv9zCJsYRuKPA8M"
 
 # Initialize MQTT Client
 mqtt_client = mqtt.Client()
