@@ -29,17 +29,13 @@
         </div>
     </div>
 
-    <!-- Motion Detection History -->
+    <!-- Motion Detection Chart -->
     <div class="card glass">
-        <h3>Motion Detection Readings</h3>
-        <p style="color: #ccc; margin-bottom: 1.5rem;">View motion sensor data and security events.</p>
+        <h3>Motion Detection History</h3>
+        <p style="color: #ccc; margin-bottom: 1.5rem;">Visual timeline of motion detection events.</p>
         
-        <div style="margin-bottom: 2rem;">
-            <div class="glass" style="padding: 1.5rem; border-radius: 10px; text-align: center;">
-                <h4 style="color: #fff; margin-bottom: 0.5rem;">Current Motion Status</h4>
-                <p id="motionStatus" style="font-size: 2rem; font-weight: bold; color: #4CAF50;">No Motion</p>
-                <p id="lastMotionTime" style="color: #ccc; margin-top: 0.5rem;">--</p>
-            </div>
+        <div class="chart-placeholder" style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border-radius: 15px; padding: 2rem; border: 1px solid rgba(255, 255, 255, 0.1);">
+            <canvas id="motionChart" width="400" height="200"></canvas>
         </div>
     </div>
 
@@ -78,6 +74,7 @@
     </div>
 </div>
 
+<script src="{{ url_for('static', filename='bar_chart.js') }}"></script>
 <script>
 let securityEnabled = false;
 let holdInterval = null;
@@ -148,6 +145,7 @@ function showNotification(message, type) {
 
 let motionReadings = [];
 let currentMotionIndex = 0;
+let motionChart = null;
 
 // Load motion sensing data
 function loadMotionData() {
@@ -158,10 +156,128 @@ function loadMotionData() {
             motionReadings = result.data;
             currentMotionIndex = motionReadings.length - 1;
             displayMotionReading();
+            createMotionChart();
         }
     })
     .catch(error => {
         console.error('Error loading motion data:', error);
+    });
+}
+
+// Create motion detection bar chart
+function createMotionChart() {
+    if (motionReadings.length === 0) return;
+    
+    const ctx = document.getElementById('motionChart').getContext('2d');
+    
+    // Destroy existing chart if it exists
+    if (motionChart) {
+        motionChart.destroy();
+    }
+    
+    // Prepare data - reverse to show oldest to newest
+    const reversedData = [...motionReadings].reverse();
+    const labels = reversedData.map(reading => {
+        const timestamp = new Date(reading.timestamp);
+        const hours = timestamp.getHours().toString().padStart(2, '0');
+        const minutes = timestamp.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+    });
+    const counts = reversedData.map(reading => reading.count);
+    
+    // Alternating colors: pink and teal like the environmental chart
+    const backgroundColors = counts.map((count, index) => {
+        if (index % 2 === 0) {
+            return 'rgba(255, 99, 132, 0.6)'; // Pink
+        } else {
+            return 'rgba(75, 192, 192, 0.6)'; // Teal
+        }
+    });
+    
+    const borderColors = counts.map((count, index) => {
+        if (index % 2 === 0) {
+            return 'rgb(255, 99, 132)'; // Pink
+        } else {
+            return 'rgb(75, 192, 192)'; // Teal
+        }
+    });
+    
+    motionChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Motion Count',
+                data: counts,
+                backgroundColor: backgroundColors,
+                borderColor: borderColors,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        color: '#fff',
+                        font: {
+                            size: 14
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Motion Detection Over Time',
+                    color: '#fff',
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#fff',
+                        stepSize: 1
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)',
+                        borderColor: 'rgba(255, 255, 255, 0.3)'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Motion Count',
+                        color: '#fff',
+                        font: {
+                            size: 14
+                        }
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: '#fff',
+                        maxRotation: 45,
+                        minRotation: 0
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)',
+                        borderColor: 'rgba(255, 255, 255, 0.3)'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Time (HH:MM)',
+                        color: '#fff',
+                        font: {
+                            size: 14
+                        }
+                    }
+                }
+            }
+        }
     });
 }
 
@@ -177,16 +293,16 @@ function displayMotionReading() {
     detailsDiv.innerHTML = `
         <div style="display: grid; gap: 1rem;">
             <div>
+                <div style="color: #999; font-size: 0.9rem;">Timestamp</div>
+                <div style="color: #fff; font-size: 1.2rem; font-weight: bold;">${reading.timestamp}</div>
+            </div>
+            <div>
+                <div style="color: #999; font-size: 0.9rem;">Motion Count</div>
+                <div style="color: #fff; font-size: 1.5rem; font-weight: bold;">${reading.count}</div>
+            </div>
+            <div>
                 <div style="color: #999; font-size: 0.9rem;">Motion Detected</div>
-                <div style="color: #fff; font-size: 1.5rem; font-weight: bold;">${reading.detected ? 'YES' : 'NO'}</div>
-            </div>
-            <div>
-                <div style="color: #999; font-size: 0.9rem;">Sensor Value</div>
-                <div style="color: #fff; font-size: 1.5rem; font-weight: bold;">${reading.value}</div>
-            </div>
-            <div>
-                <div style="color: #999; font-size: 0.9rem;">Location</div>
-                <div style="color: #fff; font-size: 1.2rem;">${reading.location || 'Main Entrance'}</div>
+                <div style="color: ${reading.detected ? '#ff6b6b' : '#4CAF50'}; font-size: 1.5rem; font-weight: bold;">${reading.detected ? 'YES' : 'NO'}</div>
             </div>
         </div>
     `;

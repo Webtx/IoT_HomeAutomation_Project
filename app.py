@@ -11,18 +11,20 @@ import paho.mqtt.client as mqtt
 # Load environment variables
 load_dotenv()
 
+# Adafruit IO credentials
+ADAFRUIT_IO_USERNAME = os.getenv('ADAFRUIT_IO_USERNAME', 'HappyAnnie')
+ADAFRUIT_IO_KEY = os.getenv('ADAFRUIT_IO_KEY', 'aio_UdLW9471L1DZ4pTFGadE9rdIQC5k')
+
 # Initialize Adafruit IO client (REST API)
-aio = Client(os.getenv('ADAFRUIT_IO_USERNAME'), os.getenv('ADAFRUIT_IO_KEY'))
+aio = Client(ADAFRUIT_IO_USERNAME, ADAFRUIT_IO_KEY)
 
 # MQTT Setup for Adafruit IO
 MQTT_BROKER = "io.adafruit.com"
 MQTT_PORT = 1883
-USERNAME = "HappyAnnie"
-KEY = "aio_KvJv15bgUedgLJzUU6u17NKSyEar"
 
 # Initialize MQTT Client
 mqtt_client = mqtt.Client()
-mqtt_client.username_pw_set(USERNAME, KEY)
+mqtt_client.username_pw_set(ADAFRUIT_IO_USERNAME, ADAFRUIT_IO_KEY)
 
 try:
     mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
@@ -307,7 +309,7 @@ def control_device(feed_key):
             device_states[feed_key] = value
         
         # Publish to MQTT (more reliable for device control)
-        topic = f"{USERNAME}/feeds/{actual_feed}"
+        topic = f"{ADAFRUIT_IO_USERNAME}/feeds/{actual_feed}"
         mqtt_client.publish(topic, str(value))
         print(f"Published to {topic}: {value}")
         
@@ -343,7 +345,7 @@ def toggle_device(device_id):
         new_state = device_states[device_id]
         
         # Publish to MQTT
-        topic = f"{USERNAME}/feeds/{actual_feed}"
+        topic = f"{ADAFRUIT_IO_USERNAME}/feeds/{actual_feed}"
         mqtt_client.publish(topic, str(new_state))
         print(f"Toggled {topic}: {new_state}")
         
@@ -371,26 +373,37 @@ def get_device_state(device_id):
 
 @app.route('/api/motion-data')
 def get_motion_data():
-    """Get motion sensor data (simulated for now)"""
+    """Get motion sensor data from Neon database"""
     try:
-        from datetime import datetime, timedelta
+        conn = get_db_connection()
+        cursor = conn.cursor()
         
-        # Simulate motion sensor data
+        cursor.execute('''
+            SELECT timestamp, count
+            FROM motion_events
+            ORDER BY timestamp DESC
+        ''')
+        
+        rows = cursor.fetchall()
+        conn.close()
+        
         motion_data = []
-        base_time = datetime.now()
-        
-        for i in range(20):
-            time_offset = timedelta(minutes=i * 5)
+        for row in rows:
+            timestamp_val = row['timestamp']
+            if hasattr(timestamp_val, 'strftime'):
+                timestamp_str = timestamp_val.strftime('%Y-%m-%d %H:%M:%S')
+            else:
+                timestamp_str = str(timestamp_val)
+            
             motion_data.append({
-                'timestamp': (base_time - time_offset).strftime('%Y-%m-%d %H:%M:%S'),
-                'detected': i % 3 == 0,  # Every 3rd reading has motion
-                'value': 1 if i % 3 == 0 else 0,
-                'location': 'Main Entrance'
+                'timestamp': timestamp_str,
+                'count': row['count'],
+                'detected': row['count'] > 0
             })
         
         return jsonify({
             'success': True,
-            'data': list(reversed(motion_data))
+            'data': motion_data
         })
     except Exception as e:
         print(f"Error getting motion data: {e}")
