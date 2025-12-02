@@ -160,7 +160,7 @@ Open your browser and go to `http://127.0.0.1:5000`
 
 **security_data**
 - `id`: Primary key
-- `motion_detected`: Boolean
+- `motion_detected`: Integer
 - `timestamp`: Timestamp
 
 ## 🔌 API Endpoints
@@ -240,6 +240,9 @@ The security system can be enabled or disabled through the web interface. When e
 - Never commit `.env` file to version control
 - Use strong passwords for database and API keys
 - Keep dependencies updated
+
+## Reflexion ##
+The part that worked best was controlling the LEDs, fan, and relay remotely using MQTT. The hardest part was figuring out how MQTT communication works and making sure messages are received and sent correctly. Connecting Flask and rendering the front-end was also tricky, especially keeping the web interface in sync with device states. We struggled a bit with avoiding message loops. If We were to improve this project, We would focus on handling better the MQTT messages. Overall, we learned a lot about IoT communication, device control, and integrating Python with web technologies.
 
 ## 📧 Support
 
