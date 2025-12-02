@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Device Control - CTRLHOUSE IoT Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="chart-container glass">
+        <h2>🎛️ IoT Device Control Panel</h2>
+        <p style="color: #ccc; margin-bottom: 2rem;">
+            Control at least three IoT devices connected via Adafruit IO. Send commands to control lights, motors, sensors, and more.
+        </p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+            <!-- Device 1: Green LED Control -->
+            <div class="card glass">
+                <h3>💡 Green LED</h3>
+                <p style="color: #ccc; margin-bottom: 1rem;">Control green LED on/off state</p>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn" onclick="controlDevice('led1', 1)">Turn ON</button>
+                    <button class="btn" onclick="controlDevice('led1', 0)">Turn OFF</button>
+                </div>
+                <div id="led1-status" style="margin-top: 1rem; padding: 0.75rem; border-radius: 10px; background: rgba(255,255,255,0.05);">
+                    Status: <span style="color: #4CAF50;">Ready</span>
+                </div>
+            </div>
+
+            <!-- Device 2: Red LED Control -->
+            <div class="card glass">
+                <h3>💡 Red LED</h3>
+                <p style="color: #ccc; margin-bottom: 1rem;">Control red LED on/off state</p>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn" onclick="controlDevice('led2', 1)">Turn ON</button>
+                    <button class="btn" onclick="controlDevice('led2', 0)">Turn OFF</button>
+                </div>
+                <div id="led2-status" style="margin-top: 1rem; padding: 0.75rem; border-radius: 10px; background: rgba(255,255,255,0.05);">
+                    Status: <span style="color: #4CAF50;">Ready</span>
+                </div>
+            </div>
+
+            <!-- Device 3: Blue LED Control -->
+            <div class="card glass">
+                <h3>💡 Blue LED</h3>
+                <p style="color: #ccc; margin-bottom: 1rem;">Control blue LED on/off state</p>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn" onclick="controlDevice('led3', 1)">Turn ON</button>
+                    <button class="btn" onclick="controlDevice('led3', 0)">Turn OFF</button>
+                </div>
+                <div id="led3-status" style="margin-top: 1rem; padding: 0.75rem; border-radius: 10px; background: rgba(255,255,255,0.05);">
+                    Status: <span style="color: #4CAF50;">Ready</span>
+                </div>
+            </div>
+
+            <!-- Device 4: Fan Control -->
+            <div class="card glass">
+                <h3>🌀 Fan Speed</h3>
+                <p style="color: #ccc; margin-bottom: 1rem;">Control fan on/off state</p>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn" onclick="controlDevice('fan', 1)">Turn ON</button>
+                    <button class="btn" onclick="controlDevice('fan', 0)">Turn OFF</button>
+                </div>
+                <div id="fan-status" style="margin-top: 1rem; padding: 0.75rem; border-radius: 10px; background: rgba(255,255,255,0.05);">
+                    Status: <span style="color: #4CAF50;">Ready</span>
+                </div>
+            </div>
+
+            <!-- Device 5: Relay Control -->
+            <div class="card glass">
+                <h3>🔌 Power Relay</h3>
+                <p style="color: #ccc; margin-bottom: 1rem;">Control power relay switch</p>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn" onclick="controlDevice('relay', 1)">Enable</button>
+                    <button class="btn" onclick="controlDevice('relay', 0)">Disable</button>
+                </div>
+                <div id="relay-status" style="margin-top: 1rem; padding: 0.75rem; border-radius: 10px; background: rgba(255,255,255,0.05);">
+                    Status: <span style="color: #4CAF50;">Ready</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 2rem;">
+        <div class="card glass">
+            <h3>📊 Device Activity Log</h3>
+            <div id="activityLog" style="max-height: 300px; overflow-y: auto; margin-top: 1rem;">
+                <p style="color: #ccc;">Activity log will appear here...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function controlDevice(device, value) {
+        const statusElement = document.getElementById(`${device}-status`);
+        
+        if (statusElement) {
+            statusElement.innerHTML = 'Status: <span style="color: #FFA500;">Sending command...</span>';
+        }
+        
+        fetch(`/api/adafruit/control/${device}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ value: value })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                if (statusElement) {
+                    statusElement.innerHTML = `Status: <span style="color: #4CAF50;">Command sent successfully!</span>`;
+                }
+                logActivity(device, value);
+                
+                // Reset status after 3 seconds
+                setTimeout(() => {
+                    if (statusElement) {
+                        statusElement.innerHTML = 'Status: <span style="color: #4CAF50;">Ready</span>';
+                    }
+                }, 3000);
+            } else {
+                if (statusElement) {
+                    statusElement.innerHTML = `Status: <span style="color: #f44336;">Error: ${result.error}</span>`;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error controlling device:', error);
+            if (statusElement) {
+                statusElement.innerHTML = `Status: <span style="color: #f44336;">Connection error</span>`;
+            }
+        });
+    }
+
+    function logActivity(device, value) {
+        const logContainer = document.getElementById('activityLog');
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = document.createElement('div');
+        logEntry.className = 'glass';
+        logEntry.style.padding = '0.75rem';
+        logEntry.style.marginBottom = '0.5rem';
+        logEntry.style.borderRadius = '8px';
+        logEntry.innerHTML = `
+            <span style="color: #4CAF50;">[${timestamp}]</span> 
+            <strong>${device.toUpperCase()}</strong>: Set to <span style="color: #64B5F6;">${value}</span>
+        `;
+        
+        // Clear initial message if present
+        if (logContainer.querySelector('p')) {
+            logContainer.innerHTML = '';
+        }
+        
+        logContainer.prepend(logEntry);
+        
+        // Keep only last 20 entries
+        while (logContainer.children.length > 20) {
+            logContainer.removeChild(logContainer.lastChild);
+        }
+    }
+</script>
+{% endblock %}

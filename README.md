@@ -1,83 +1,146 @@
-# CTRLHOUSE
+# CTRLHOUSE - IoT Dashboard System
 
-## Team Members
-- Student 1: Annie Yang
-- Student 2: Sebastian
+## 🏗️ System Architecture (from PDF)
 
-## Project Overview
-This project implements a **Home Automation and Security System** using a **Raspberry Pi 5**.  
-It integrates hardware and software to monitor home conditions, detect intrusions, and control devices remotely via a **dashboard**.
+```
+┌─────────────────┐         ┌──────────────────┐         ┌─────────────────┐
+│  Raspberry Pi   │ ──MQTT─→│   Adafruit IO    │←──HTTP──│  Render Web App │
+│  (Teammate)     │         │   (Cloud Bridge) │         │   (Your UI)     │
+└────────┬────────┘         └─────────┬────────┘         └─────────────────┘
+         │                            │                            ↑
+         │ SQL Inserts                │ Historical Data            │
+         ↓                            ↓                            │
+┌─────────────────────────────────────────────────────────────────┘
+│            Neon PostgreSQL Database (Cloud)
+└──────────────────────────────────────────────────────────────────
 
-**Sensors Used:**
-- PIR Motion Sensor (intrusion detection)
-- DHT11 Temperature & Humidity Sensor
-- Light Sensor (LDR)
+```
 
-**Actuators Used:**
-- LEDs (visual indicators)
-- Motor
-- Relay-controlled device (Motor)
+## 📋 How It Works
 
-**Core Features:**
-- Intrusion detection with instant alerts
-- Temperature, humidity, and light monitoring
-- Remote device control via MQTT dashboard
-- Daily local data logging with automatic upload to cloud storage
-- Clean packaging with cable management
+### **1. Raspberry Pi (Your Teammate's Side)**
+- Runs `raspberry_pi_controller.py`
+- Reads real sensors (temperature, humidity, light)
+- Controls physical devices (LED, fan, relay)
+- **Sends** sensor data → Adafruit IO
+- **Receives** control commands ← Adafruit IO
+- Saves historical data → Neon database
 
----
+### **2. Adafruit IO (Cloud Middleware)**
+- **The magic connector!**
+- Stores live sensor feeds
+- Stores control commands
+- Allows **remote control** from anywhere
+- MQTT protocol for real-time communication
 
-## Features & Functionalities
+### **3. Your Render Web App (UI)**
+- Beautiful liquid glass interface
+- **Anyone can access** from any computer
+- **You control from your laptop:**
+  - Click "Turn LED ON" → sends to Adafruit IO → Pi receives → LED turns on
+- **You view sensors:**
+  - Pi sends temp → Adafruit IO → Your UI displays it
+- Shows historical data from Neon database
 
-### Real-Time Monitoring
-- Detect motion using PIR sensor
-- Capture last motion event timestamp and optionally trigger Pi Camera
-- Monitor temperature, humidity, and light 
+### **4. Neon Database**
+- Stores all sensor readings permanently
+- Query historical trends (last 24 hours, week, month)
+- **Offline backup**: When internet fails:
+  - Pi saves to local SQLite
+  - When online again, sync to Neon
 
-### Actuator Control
-- Toggle LEDs, fan, and relay devices remotely
+## 🚀 Setup Instructions
 
-### Cloud Connectivity
-- MQTT integration with **Adafruit IO**
-- Live dashboard tiles for sensors and actuators
-- Status indicators and mode selector (Home/Away/Night)
+### **For Your Teammate (Raspberry Pi):**
 
-### Data Logging
-- Logs stored locally in `data/` folder
-- Daily file rotation with timestamped filenames (CSV format)
-- Minimum fields: timestamp, sensor readings, actuator states, events
-
----
-
-## Hardware Setup
-- Raspberry Pi 5 
-- GPIO pin connections:  
-  - LED1 → GPIO 16  
-  - LED2 → GPIO 23  
-  - LED3 → GPIO 24  
-  - Fan → GPIO 22  
-  - Relay → GPIO 18  
-  - PIR Motion Sensor → GPIO 17  
-  - DHT11 Sensor → GPIO 4  
-- Pi Camera Module V2
-
-
-<img width="693" height="530" alt="image" src="https://github.com/user-attachments/assets/d308bb2b-50cd-406b-b4ad-c932085d19a1" />
-
-
----
-## Reflection
-
-During this project, we successfully implemented a Home Automation and Security System using a Raspberry Pi. The system was able to monitor motion, temperature, humidity, and light levels while controlling actuators remotely through an MQTT dashboard.
-
-The hardest part was integrating all modules—especially getting the PIR motion detection and pushing the code to github.
-If we were to improve the project, we would improve error handling, improve organizations with files and folders and optimize data uploads.
-## Software Setup
-
-1. **Clone the repository:**
+1. **Install dependencies on Pi:**
 ```bash
-git clone https://github.com/yourusername/IoT_HomeAutomation_Project.git
-cd IoT_HomeAutomation_Project
-cd src
-python ModeControl.py ( activate to collect sensors data )
-python SecurityActivated.py ( use different modes to either switch lights, turn on the fan, & turn on the relay )
+pip3 install Adafruit_IO psycopg2-binary RPi.GPIO Adafruit_DHT
+```
+
+2. **Run the controller:**
+```bash
+python3 raspberry_pi_controller.py
+```
+
+3. **That's it!** Leave it running. It will:
+   - Send sensor data every 5 seconds
+   - Listen for your control commands
+   - Log everything to database
+
+### **For You (Web Interface):**
+
+1. **Deploy to Render:**
+   - Push code to GitHub: `seblxx/renderdeploytest`
+   - Create Web Service on Render
+   - Add environment variables:
+     - `DATABASE_URL`: (Neon connection string)
+     - `ADAFRUIT_IO_USERNAME`: HappyAnnie
+     - `ADAFRUIT_IO_KEY`: aio_KvJv15bgUedgLJzUU6u17NKSyEar
+
+2. **Access from ANY computer:**
+   - Go to `https://your-app.onrender.com`
+   - View live sensor data
+   - Control devices remotely!
+
+## 🎮 Remote Control - How It Works
+
+**Example: You want to turn on the LED from your laptop at home**
+
+1. **You**: Click "Turn ON" button in browser
+2. **Your UI** (Render): Sends HTTP POST to `/api/adafruit/control/led` with value=1
+3. **Flask App**: Calls `aio.send_data('led', 1)` to Adafruit IO
+4. **Adafruit IO**: Broadcasts to all MQTT subscribers
+5. **Raspberry Pi**: Receives command via MQTT callback
+6. **Pi**: Runs `control_led(1)` → GPIO output HIGH → **LED turns on!**
+
+**The whole process takes ~500ms!**
+
+## 📊 What Each Component Does
+
+| Component | Purpose | Why Needed (from PDF) |
+|-----------|---------|----------------------|
+| **Raspberry Pi** | Physical device controller | Controls real sensors/devices in the house |
+| **Adafruit IO** | Cloud MQTT broker | Allows remote control over internet |
+| **Render Flask** | Web interface | Beautiful UI for monitoring & control |
+| **Neon Database** | Historical storage | View past data trends, offline backup |
+
+## 🔧 PDF Requirements Checklist
+
+✅ Pi sends sensor data to Adafruit IO
+✅ Pi sends sensor data to Neon database
+✅ Flask app shows live data from **at least 3 sensors**
+✅ Flask app controls **at least 3 devices**
+✅ Flask app plots historical data (date selection)
+✅ Handles offline mode (SQLite backup + sync)
+✅ Nice CSS look (liquid glass design!)
+✅ Deployed on Render.com
+
+## 🎯 Answer to Your Questions
+
+**Q: Can I control the house from my computer?**
+**A:** YES! That's the whole point! Adafruit IO is the bridge. Your teammate's Pi listens to Adafruit IO. You send commands via your web UI → Adafruit IO → Pi executes.
+
+**Q: Should I send her the UI?**
+**A:** NO! That's the beauty of Render. You deploy once, **everyone can access** the same URL from any computer. She can also control from her phone!
+
+**Q: What does Neon do?**
+**A:** Two things:
+1. **Long-term storage** - View temperature graph from last week
+2. **Offline backup** - If Pi loses internet, saves locally, syncs later
+
+**Q: Does our current setup work?**
+**A:** Yes! Just need your teammate to run `raspberry_pi_controller.py` on the Pi. Then your Render UI will work perfectly.
+
+## 🌐 Access Points
+
+- **Your Render UI**: `https://ctrlhouse.onrender.com` (example)
+- **Adafruit IO Dashboard**: `https://io.adafruit.com/HappyAnnie`
+- **Neon Database**: Already connected via app.py
+
+## 📝 Notes
+
+- **No need to be on same WiFi** - everything is cloud-based!
+- **Works from anywhere** - even different countries
+- **Multiple users** - You, your teammate, your professor can all access simultaneously
+- **Always on** - Pi stays running, you access UI whenever needed

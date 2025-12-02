@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}About - CTRLHOUSE{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <div class="about-hero">
+        <h1 class="about-title">CTRLHOUSE</h1>
+        <p class="about-subtitle">IoT Home Automation & Security System</p>
+        <div class="about-divider"></div>
+    </div>
+
+    <!-- Description Section -->
+    <div class="about-section">
+        <div class="about-description">
+            <p>
+                CTRLHOUSE is a comprehensive IoT-based home automation and security system that combines environmental monitoring, 
+                device control, and security features in an elegant, user-friendly web interface. Built with Flask and powered by 
+                cloud technologies, it provides real-time monitoring and control of your smart home from anywhere in the world.
+            </p>
+        </div>
+    </div>
+
+    <!-- Key Features Section -->
+    <div class="about-section">
+        <h2 class="section-title">Key Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+                    </svg>
+                </div>
+                <h3>Environmental Monitoring</h3>
+                <p>Track temperature, humidity, and pressure readings from Raspberry Pi sensors with historical data visualization.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="2"/>
+                        <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+                    </svg>
+                </div>
+                <h3>Device Control</h3>
+                <p>Remotely control home devices (LED, Fan, Relay) through Adafruit IO integration.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </div>
+                <h3>Security System</h3>
+                <p>Enable/disable security monitoring and view motion detection history.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+                    </svg>
+                </div>
+                <h3>Cloud Integration</h3>
+                <p>Data stored in Neon PostgreSQL cloud database with Render deployment.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technology Stack Section -->
+    <div class="about-section">
+        <h2 class="section-title">Technology Stack</h2>
+        <div class="tech-grid">
+            <div class="tech-badge">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                <span>Python & Flask</span>
+            </div>
+            <div class="tech-badge">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 3v18h18"/>
+                    <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+                </svg>
+                <span>Chart.js</span>
+            </div>
+            <div class="tech-badge">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                </svg>
+                <span>PostgreSQL</span>
+            </div>
+            <div class="tech-badge">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="6"/>
+                    <circle cx="12" cy="12" r="2"/>
+                </svg>
+                <span>Adafruit IO</span>
+            </div>
+            <div class="tech-badge">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                </svg>
+                <span>Raspberry Pi</span>
+            </div>
+            <div class="tech-badge">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5"/>
+                    <polyline points="12 12 12 22"/>
+                </svg>
+                <span>Render</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Team Section -->
+    <div class="about-section">
+        <h2 class="section-title">Project Team</h2>
+        <div class="team-grid">
+            <div class="team-member">
+                <div class="member-avatar" style="background: linear-gradient(135deg, #333 0%, #666 100%);">
+                    <span>S</span>
+                </div>
+                <h3>Sebastien</h3>
+                <p class="member-role">Frontend, Backend & IoT</p>
+                <p class="member-desc">UI Design & Raspberry Pi Integration</p>
+            </div>
+            <div class="team-member">
+                <div class="member-avatar" style="background: linear-gradient(135deg, #555 0%, #888 100%);">
+                    <span>A</span>
+                </div>
+                <h3>Annie</h3>
+                <p class="member-role">Backend, Raspberry Pi & Cloud</p>
+                <p class="member-desc">Database Design & Cloud Architecture</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="about-footer">
+        <p>CTRLHOUSE - Lab 10 IoT Project</p>
+        <p>© 2025 CTRLHOUSE Team. All rights reserved.</p>
+    </div>
+</div>
+{% endblock %}

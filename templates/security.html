@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Security System - CTRLHOUSE{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 style="color: #fff; margin-bottom: 1rem;">Manage Security</h1>
+    <p style="color: #ccc; margin-bottom: 2rem;">Control your home security system and view motion detection history.</p>
+
+    <!-- Security System Control -->
+    <div class="card glass" style="margin-bottom: 2rem;">
+        <h3>Security System Control</h3>
+        <p style="color: #ccc; margin-bottom: 1.5rem;">Enable or disable the security monitoring system.</p>
+        
+        <div style="display: flex; align-items: center; justify-content: center; gap: 2rem;">
+            <div class="glass" style="padding: 2rem; border-radius: 15px; text-align: center; min-width: 200px;">
+                <div id="securityStatus" style="font-size: 3rem; margin-bottom: 1rem;"></div>
+                <div id="securityStatusText" style="color: #ff6b6b; font-size: 1.5rem; font-weight: bold;">DISABLED</div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn" onclick="enableSecurity()" style="background: rgba(76, 175, 80, 0.2); padding: 1rem 2rem; font-size: 1.1rem;">
+                    Enable Security
+                </button>
+                <button class="btn" onclick="disableSecurity()" style="background: rgba(244, 67, 54, 0.2); padding: 1rem 2rem; font-size: 1.1rem;">
+                    Disable Security
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Motion Detection History -->
+    <div class="card glass">
+        <h3>Motion Detection Readings</h3>
+        <p style="color: #ccc; margin-bottom: 1.5rem;">View motion sensor data and security events.</p>
+        
+        <div style="margin-bottom: 2rem;">
+            <div class="glass" style="padding: 1.5rem; border-radius: 10px; text-align: center;">
+                <h4 style="color: #fff; margin-bottom: 0.5rem;">Current Motion Status</h4>
+                <p id="motionStatus" style="font-size: 2rem; font-weight: bold; color: #4CAF50;">No Motion</p>
+                <p id="lastMotionTime" style="color: #ccc; margin-top: 0.5rem;">--</p>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 2rem;">
+        <div class="card glass">
+            <h3>Navigate Motion Sensing Readings</h3>
+            <p style="margin-bottom: 1.5rem; color: #ccc;">Use Previous/Next buttons to navigate between individual motion detection events.</p>
+            
+            <div style="display: flex; gap: 1rem; align-items: center; justify-content: center;">
+                <button class="btn" 
+                        onmousedown="startHoldingPreviousMotion()" 
+                        onmouseup="stopHoldingMotion()" 
+                        onmouseleave="stopHoldingMotion()"
+                        ontouchstart="startHoldingPreviousMotion()" 
+                        ontouchend="stopHoldingMotion()"
+                        style="padding: 0.75rem 2rem;">Previous</button>
+                <div style="text-align: center;">
+                    <div style="color: #fff; font-size: 1.2rem; font-weight: bold;" id="currentMotionTimestamp">--</div>
+                    <div style="color: #ccc; font-size: 0.9rem; margin-top: 0.5rem;" id="motionPosition">-- of --</div>
+                </div>
+                <button class="btn" 
+                        onmousedown="startHoldingNextMotion()" 
+                        onmouseup="stopHoldingMotion()" 
+                        onmouseleave="stopHoldingMotion()"
+                        ontouchstart="startHoldingNextMotion()" 
+                        ontouchend="stopHoldingMotion()"
+                        style="padding: 0.75rem 2rem;">Next</button>
+            </div>
+            
+            <div style="margin-top: 2rem;">
+                <div id="motionDetails" class="glass" style="padding: 1.5rem; border-radius: 10px;">
+                    <p style="color: #ccc; text-align: center;">Select a reading to view details</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let securityEnabled = false;
+let holdInterval = null;
+let holdTimeout = null;
+
+// Load security status from localStorage
+function loadSecurityStatus() {
+    const status = localStorage.getItem('securityEnabled');
+    securityEnabled = status === 'true';
+    updateSecurityDisplay();
+}
+
+// Update security display
+function updateSecurityDisplay() {
+    const statusIcon = document.getElementById('securityStatus');
+    const statusText = document.getElementById('securityStatusText');
+    
+    if (securityEnabled) {
+        statusIcon.textContent = '[ON]';
+        statusIcon.style.color = '#4CAF50';
+        statusText.textContent = 'ENABLED';
+        statusText.style.color = '#4CAF50';
+    } else {
+        statusIcon.textContent = '[OFF]';
+        statusIcon.style.color = '#ff6b6b';
+        statusText.textContent = 'DISABLED';
+        statusText.style.color = '#ff6b6b';
+    }
+}
+
+// Enable security
+function enableSecurity() {
+    securityEnabled = true;
+    localStorage.setItem('securityEnabled', 'true');
+    updateSecurityDisplay();
+    showNotification('Security system enabled', 'success');
+}
+
+// Disable security
+function disableSecurity() {
+    securityEnabled = false;
+    localStorage.setItem('securityEnabled', 'false');
+    updateSecurityDisplay();
+    showNotification('Security system disabled', 'warning');
+}
+
+// Show notification
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 2rem;
+        border-radius: 10px;
+        background: ${type === 'success' ? 'rgba(76, 175, 80, 0.9)' : 'rgba(255, 107, 107, 0.9)'};
+        color: white;
+        font-weight: bold;
+        z-index: 9999;
+        animation: slideIn 0.3s ease;
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+let motionReadings = [];
+let currentMotionIndex = 0;
+
+// Load motion sensing data
+function loadMotionData() {
+    fetch('/api/motion-data')
+    .then(response => response.json())
+    .then(result => {
+        if (result.success && result.data.length > 0) {
+            motionReadings = result.data;
+            currentMotionIndex = motionReadings.length - 1;
+            displayMotionReading();
+        }
+    })
+    .catch(error => {
+        console.error('Error loading motion data:', error);
+    });
+}
+
+// Display current motion reading
+function displayMotionReading() {
+    if (motionReadings.length === 0) return;
+    
+    const reading = motionReadings[currentMotionIndex];
+    document.getElementById('currentMotionTimestamp').textContent = reading.timestamp;
+    document.getElementById('motionPosition').textContent = `${currentMotionIndex + 1} of ${motionReadings.length}`;
+    
+    const detailsDiv = document.getElementById('motionDetails');
+    detailsDiv.innerHTML = `
+        <div style="display: grid; gap: 1rem;">
+            <div>
+                <div style="color: #999; font-size: 0.9rem;">Motion Detected</div>
+                <div style="color: #fff; font-size: 1.5rem; font-weight: bold;">${reading.detected ? 'YES' : 'NO'}</div>
+            </div>
+            <div>
+                <div style="color: #999; font-size: 0.9rem;">Sensor Value</div>
+                <div style="color: #fff; font-size: 1.5rem; font-weight: bold;">${reading.value}</div>
+            </div>
+            <div>
+                <div style="color: #999; font-size: 0.9rem;">Location</div>
+                <div style="color: #fff; font-size: 1.2rem;">${reading.location || 'Main Entrance'}</div>
+            </div>
+        </div>
+    `;
+    
+    // Update current status
+    const statusEl = document.getElementById('motionStatus');
+    const timeEl = document.getElementById('lastMotionTime');
+    if (reading.detected) {
+        statusEl.textContent = 'Motion Detected!';
+        statusEl.style.color = '#ff6b6b';
+    } else {
+        statusEl.textContent = 'No Motion';
+        statusEl.style.color = '#4CAF50';
+    }
+    timeEl.textContent = `Last checked: ${reading.timestamp}`;
+}
+
+// Navigate to previous motion reading
+function loadPreviousMotion() {
+    if (currentMotionIndex > 0) {
+        currentMotionIndex--;
+        displayMotionReading();
+    }
+}
+
+// Navigate to next motion reading
+function loadNextMotion() {
+    if (currentMotionIndex < motionReadings.length - 1) {
+        currentMotionIndex++;
+        displayMotionReading();
+    }
+}
+
+// Start holding previous
+function startHoldingPreviousMotion() {
+    loadPreviousMotion();
+    holdTimeout = setTimeout(() => {
+        holdInterval = setInterval(() => {
+            loadPreviousMotion();
+        }, 100); // Navigate every 100ms when held
+    }, 300); // Wait 300ms before starting rapid navigation
+}
+
+// Start holding next
+function startHoldingNextMotion() {
+    loadNextMotion();
+    holdTimeout = setTimeout(() => {
+        holdInterval = setInterval(() => {
+            loadNextMotion();
+        }, 100); // Navigate every 100ms when held
+    }, 300); // Wait 300ms before starting rapid navigation
+}
+
+// Stop holding
+function stopHoldingMotion() {
+    if (holdTimeout) {
+        clearTimeout(holdTimeout);
+        holdTimeout = null;
+    }
+    if (holdInterval) {
+        clearInterval(holdInterval);
+        holdInterval = null;
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadSecurityStatus();
+    loadMotionData();
+    setInterval(loadMotionData, 30000); // Refresh every 30 seconds
+});
+</script>
+
+<style>
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+</style>
+{% endblock %}

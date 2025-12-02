@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}CTRLHOUSE - IoT Home Automation{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="hero">
+        <div style="text-align: center;">
+            <h1 style="font-size: 4rem; margin-bottom: 1rem;">CTRLHOUSE</h1>
+            <p style="color: #ccc; font-size: 1.1rem; max-width: 600px; margin: 1rem auto;">Control your smart home from anywhere. Monitor environmental conditions, manage devices, and secure your property with cutting-edge IoT technology.</p>
+        </div>
+    </section>
+
+    <!-- Live Sensor Readings -->
+    <div style="margin: 3rem 0;">
+        <div class="glass" style="padding: 2rem; border-radius: 15px;">
+            <h2 style="margin-bottom: 1.5rem; text-align: center; color: #fff;">Live Sensor Readings</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                <div style="text-align: center; padding: 1.5rem; border-radius: 10px; background: rgba(255, 255, 255, 0.05);">
+                    <h3 style="color: #fff; margin-bottom: 0.5rem;">Temperature</h3>
+                    <p id="homeTemp" style="font-size: 2.5rem; font-weight: bold; color: #fff;">Loading...</p>
+                </div>
+                <div style="text-align: center; padding: 1.5rem; border-radius: 10px; background: rgba(255, 255, 255, 0.05);">
+                    <h3 style="color: #fff; margin-bottom: 0.5rem;">Humidity</h3>
+                    <p id="homeHumidity" style="font-size: 2.5rem; font-weight: bold; color: #fff;">Loading...</p>
+                </div>
+                <div style="text-align: center; padding: 1.5rem; border-radius: 10px; background: rgba(255, 255, 255, 0.05);">
+                    <h3 style="color: #fff; margin-bottom: 0.5rem;">Pressure</h3>
+                    <p id="homePressure" style="font-size: 2.5rem; font-weight: bold; color: #fff;">Loading...</p>
+                </div>
+            </div>
+            <p id="lastUpdate" style="text-align: center; color: #fff; margin-top: 1rem; font-size: 0.9rem;">Connecting to database...</p>
+        </div>
+    </div>
+
+    <!-- Feature Cards -->
+    <div class="card-grid">
+        <div class="card glass">
+            <h3>Environmental Monitoring</h3>
+            <p style="margin-bottom: 1rem; color: #ccc;">Real-time temperature, humidity, and pressure tracking with historical data visualization from Lab 08 sensors</p>
+            <a href="/line-chart" class="btn" style="display: inline-block; margin-top: auto;">View Charts</a>
+        </div>
+
+        <div class="card glass">
+            <h3>Device Control</h3>
+            <p style="margin-bottom: 1rem; color: #ccc;">Remotely control LED lights, fans, and relays from anywhere via Adafruit IO cloud integration (Lab 09)</p>
+            <a href="/device-control" class="btn" style="display: inline-block; margin-top: auto;">Control Devices</a>
+        </div>
+
+        <div class="card glass">
+            <h3>Security System</h3>
+            <p style="margin-bottom: 1rem; color: #ccc;">Enable/disable security monitoring and view motion detection history to protect your home</p>
+            <a href="/security" class="btn" style="display: inline-block; margin-top: auto;">Manage Security</a>
+        </div>
+    </div>
+
+
+
+<script>
+    function loadLatestReadings() {
+        console.log('Fetching latest readings...');
+        fetch('/api/latest-readings')
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Received data:', data);
+            if (data.success) {
+                document.getElementById('homeTemp').textContent = `${data.temperature}°C`;
+                document.getElementById('homeHumidity').textContent = `${data.humidity}%`;
+                document.getElementById('homePressure').textContent = `${data.pressure} hPa`;
+                document.getElementById('lastUpdate').textContent = `Last updated: ${data.timestamp}`;
+            } else {
+                console.error('Data fetch unsuccessful:', data);
+                document.getElementById('homeTemp').textContent = '--°C';
+                document.getElementById('homeHumidity').textContent = '--%';
+                document.getElementById('homePressure').textContent = '-- hPa';
+                document.getElementById('lastUpdate').textContent = 'No sensor data available';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading sensor data:', error);
+            document.getElementById('homeTemp').textContent = 'Error';
+            document.getElementById('homeHumidity').textContent = 'Error';
+            document.getElementById('homePressure').textContent = 'Error';
+            document.getElementById('lastUpdate').textContent = 'Error loading data';
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadLatestReadings);
+    setInterval(loadLatestReadings, 30000);
+</script>
+{% endblock %}

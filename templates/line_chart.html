@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Line Chart - CTRLHOUSE IoT Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="chart-container glass">
+        <h2>Environmental Monitoring</h2>
+        <p style="color: #ccc; margin-bottom: 2rem;">
+            This chart displays temperature, humidity, and pressure readings from your Raspberry Pi sensors.
+        </p>
+        
+        <div class="chart-placeholder" id="lineChartContainer">
+            <canvas id="lineChart" width="400" height="200"></canvas>
+        </div>
+        
+        <div style="margin-top: 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div class="glass" style="padding: 1rem; border-radius: 10px;">
+                <h4 style="color: #fff; margin-bottom: 0.5rem;">Temperature</h4>
+                <p style="color: #fff; font-size: 1.5rem;" id="currentTemp">--°C</p>
+            </div>
+            <div class="glass" style="padding: 1rem; border-radius: 10px;">
+                <h4 style="color: #fff; margin-bottom: 0.5rem;">Humidity</h4>
+                <p style="color: #fff; font-size: 1.5rem;" id="currentHumidity">--%</p>
+            </div>
+            <div class="glass" style="padding: 1rem; border-radius: 10px;">
+                <h4 style="color: #fff; margin-bottom: 0.5rem;">Pressure</h4>
+                <p style="color: #fff; font-size: 1.5rem;" id="currentPressure">-- hPa</p>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div style="margin-top: 2rem;">
+        <div class="card glass">
+            <h3>Navigate Readings</h3>
+            <p style="margin-bottom: 1.5rem; color: #ccc;">Use Previous/Next buttons to navigate between individual readings. The chart shows all data from the same day.</p>
+            
+            <div style="display: flex; gap: 1rem; align-items: center; justify-content: center;">
+                <button class="btn" onclick="loadPrevious()" style="padding: 0.75rem 2rem;">Previous</button>
+                <div style="text-align: center;">
+                    <div style="color: #fff; font-size: 1.2rem; font-weight: bold;" id="currentTimestamp">--</div>
+                    <div style="color: #ccc; font-size: 0.9rem; margin-top: 0.5rem;" id="readingPosition">-- of --</div>
+                </div>
+                <button class="btn" onclick="loadNext()" style="padding: 0.75rem 2rem;">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 2rem;">
+        <div class="card glass">
+            <h3>Temperature Statistics</h3>
+            <div id="temperatureStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <!-- Statistics will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='line_chart.js') }}"></script>
+{% endblock %}
