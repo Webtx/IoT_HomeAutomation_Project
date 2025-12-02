@@ -12,8 +12,8 @@ import paho.mqtt.client as mqtt
 load_dotenv()
 
 # Adafruit IO credentials
-ADAFRUIT_IO_USERNAME = os.getenv('ADAFRUIT_IO_USERNAME', 'HappyAnnie')
-ADAFRUIT_IO_KEY = os.getenv('ADAFRUIT_IO_KEY', 'aio_UdLW9471L1DZ4pTFGadE9rdIQC5k')
+ADAFRUIT_IO_USERNAME = os.getenv('ADAFRUIT_IO_USERNAME')
+ADAFRUIT_IO_KEY = os.getenv('ADAFRUIT_IO_KEY')
 
 # Initialize Adafruit IO client (REST API)
 aio = Client(ADAFRUIT_IO_USERNAME, ADAFRUIT_IO_KEY)
