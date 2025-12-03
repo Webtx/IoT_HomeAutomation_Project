@@ -1,5 +1,9 @@
 # CTRLHOUSE - IoT Home Automation Dashboard
 
+🌐 **Live Website**: [https://ctrlhouse-v.onrender.com](https://ctrlhouse-v.onrender.com)
+
+🎥 **Project Demo**: [Watch on YouTube](https://youtube.com/shorts/5ctSFgjcPUs?feature=share)
+
 ## 📖 Overview
 
 CTRLHOUSE is a comprehensive IoT home automation system that allows you to monitor environmental conditions and control smart home devices through an elegant web interface. The system combines real-time sensor data, device control, and security monitoring in one unified dashboard.
