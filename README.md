@@ -4,6 +4,23 @@
 
 🎥 **Project Demo**: [Watch on YouTube](https://youtube.com/shorts/5ctSFgjcPUs?feature=share)
 
+## 💭 Reflection
+
+### What Worked Best
+The part that worked best was controlling the LEDs, fan, and relay remotely using MQTT. We're proud of the code we did for the backend and front end as our website looks visually pleasing and we were able to go through our challenges pretty smoothly in the backend. We made a great team. The real-time device control through the web interface exceeded our expectations, and seeing devices respond instantly to button clicks from anywhere in the world was incredibly satisfying.
+
+### Biggest Challenges
+The hardest part was the initial Raspberry Pi setup, which took us a considerable amount of time to configure properly. We also faced significant challenges with Adafruit IO keys expiring approximately every 10 minutes, which constantly disrupted our deployments and caused unexpected bugs just when we thought we were close to finishing. Figuring out how MQTT communication works and ensuring messages are received and sent correctly was another major hurdle. Additionally, connecting Flask and rendering the front-end was tricky, especially keeping the web interface in sync with device states while avoiding message loops.
+
+### What We'd Improve
+If we were to improve this project, we would focus on:
+
+1. **Physical Design**: Due to time constraints, we didn't have the opportunity to fully refine the physical appearance of our IoT device setup. With more time, we would create a more polished enclosure and better cable management for a more professional look.
+
+### What We're Proud Of
+Despite the challenges, we're extremely proud of our work on both the back-end and front-end. All functionalities work perfectly - from real-time sensor monitoring to remote device control and security system management. The integration between the Raspberry Pi, cloud services (Adafruit IO and Neon PostgreSQL), and our Flask web application is seamless. We learned a tremendous amount about IoT communication, device control, cloud databases, and integrating Python with web technologies. The project demonstrates our ability to overcome significant technical obstacles and deliver a fully functional IoT home automation system.
+
+
 ## 📖 Overview
 
 CTRLHOUSE is a comprehensive IoT home automation system that allows you to monitor environmental conditions and control smart home devices through an elegant web interface. The system combines real-time sensor data, device control, and security monitoring in one unified dashboard.
@@ -244,14 +261,5 @@ The security system can be enabled or disabled through the web interface. When e
 - Never commit `.env` file to version control
 - Use strong passwords for database and API keys
 - Keep dependencies updated
-
-## Reflexion ##
-The part that worked best was controlling the LEDs, fan, and relay remotely using MQTT. The hardest part was figuring out how MQTT communication works and making sure messages are received and sent correctly. Connecting Flask and rendering the front-end was also tricky, especially keeping the web interface in sync with device states. We struggled a bit with avoiding message loops. If We were to improve this project, We would focus on handling better the MQTT messages. Overall, we learned a lot about IoT communication, device control, and integrating Python with web technologies.
-
-## 📧 Support
-
-For questions or issues, please open an issue on GitHub.
-
----
 
 **CTRLHOUSE** - Control your smart home from anywhere with cutting-edge IoT technology.
