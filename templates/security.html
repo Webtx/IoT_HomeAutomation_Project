@@ -77,6 +77,7 @@
 <script src="{{ url_for('static', filename='bar_chart.js') }}"></script>
 <script>
 let securityEnabled = false;
+let currentMotionIndex = 0;
 let holdInterval = null;
 let holdTimeout = null;
 
@@ -143,151 +144,18 @@ function showNotification(message, type) {
     }, 3000);
 }
 
-let motionReadings = [];
-let currentMotionIndex = 0;
-let motionChart = null;
-
-// Load motion sensing data
-function loadMotionData() {
-    fetch('/api/motion-data')
-    .then(response => response.json())
-    .then(result => {
-        if (result.success && result.data.length > 0) {
-            motionReadings = result.data;
-            currentMotionIndex = motionReadings.length - 1;
-            displayMotionReading();
-            createMotionChart();
-        }
-    })
-    .catch(error => {
-        console.error('Error loading motion data:', error);
-    });
-}
-
-// Create motion detection bar chart
-function createMotionChart() {
-    if (motionReadings.length === 0) return;
-    
-    const ctx = document.getElementById('motionChart').getContext('2d');
-    
-    // Destroy existing chart if it exists
-    if (motionChart) {
-        motionChart.destroy();
-    }
-    
-    // Prepare data - reverse to show oldest to newest
-    const reversedData = [...motionReadings].reverse();
-    const labels = reversedData.map(reading => {
-        const timestamp = new Date(reading.timestamp);
-        const hours = timestamp.getHours().toString().padStart(2, '0');
-        const minutes = timestamp.getMinutes().toString().padStart(2, '0');
-        return `${hours}:${minutes}`;
-    });
-    const counts = reversedData.map(reading => reading.count);
-    
-    // Alternating colors: pink and teal like the environmental chart
-    const backgroundColors = counts.map((count, index) => {
-        if (index % 2 === 0) {
-            return 'rgba(255, 99, 132, 0.6)'; // Pink
-        } else {
-            return 'rgba(75, 192, 192, 0.6)'; // Teal
-        }
-    });
-    
-    const borderColors = counts.map((count, index) => {
-        if (index % 2 === 0) {
-            return 'rgb(255, 99, 132)'; // Pink
-        } else {
-            return 'rgb(75, 192, 192)'; // Teal
-        }
-    });
-    
-    motionChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Motion Count',
-                data: counts,
-                backgroundColor: backgroundColors,
-                borderColor: borderColors,
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: {
-                    display: true,
-                    labels: {
-                        color: '#fff',
-                        font: {
-                            size: 14
-                        }
-                    }
-                },
-                title: {
-                    display: true,
-                    text: 'Motion Detection Over Time',
-                    color: '#fff',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: '#fff',
-                        stepSize: 1
-                    },
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)',
-                        borderColor: 'rgba(255, 255, 255, 0.3)'
-                    },
-                    title: {
-                        display: true,
-                        text: 'Motion Count',
-                        color: '#fff',
-                        font: {
-                            size: 14
-                        }
-                    }
-                },
-                x: {
-                    ticks: {
-                        color: '#fff',
-                        maxRotation: 45,
-                        minRotation: 0
-                    },
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)',
-                        borderColor: 'rgba(255, 255, 255, 0.3)'
-                    },
-                    title: {
-                        display: true,
-                        text: 'Time (HH:MM)',
-                        color: '#fff',
-                        font: {
-                            size: 14
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
 // Display current motion reading
 function displayMotionReading() {
-    if (motionReadings.length === 0) return;
+    const readings = window.motionReadings || [];
+    if (readings.length === 0) {
+        document.getElementById('currentMotionTimestamp').textContent = '--';
+        document.getElementById('motionPosition').textContent = '-- of --';
+        return;
+    }
     
-    const reading = motionReadings[currentMotionIndex];
+    const reading = readings[currentMotionIndex];
     document.getElementById('currentMotionTimestamp').textContent = reading.timestamp;
-    document.getElementById('motionPosition').textContent = `${currentMotionIndex + 1} of ${motionReadings.length}`;
+    document.getElementById('motionPosition').textContent = `${currentMotionIndex + 1} of ${readings.length}`;
     
     const detailsDiv = document.getElementById('motionDetails');
     detailsDiv.innerHTML = `
@@ -306,22 +174,11 @@ function displayMotionReading() {
             </div>
         </div>
     `;
-    
-    // Update current status
-    const statusEl = document.getElementById('motionStatus');
-    const timeEl = document.getElementById('lastMotionTime');
-    if (reading.detected) {
-        statusEl.textContent = 'Motion Detected!';
-        statusEl.style.color = '#ff6b6b';
-    } else {
-        statusEl.textContent = 'No Motion';
-        statusEl.style.color = '#4CAF50';
-    }
-    timeEl.textContent = `Last checked: ${reading.timestamp}`;
 }
 
 // Navigate to previous motion reading
 function loadPreviousMotion() {
+    const readings = window.motionReadings || [];
     if (currentMotionIndex > 0) {
         currentMotionIndex--;
         displayMotionReading();
@@ -330,7 +187,8 @@ function loadPreviousMotion() {
 
 // Navigate to next motion reading
 function loadNextMotion() {
-    if (currentMotionIndex < motionReadings.length - 1) {
+    const readings = window.motionReadings || [];
+    if (currentMotionIndex < readings.length - 1) {
         currentMotionIndex++;
         displayMotionReading();
     }
@@ -342,8 +200,8 @@ function startHoldingPreviousMotion() {
     holdTimeout = setTimeout(() => {
         holdInterval = setInterval(() => {
             loadPreviousMotion();
-        }, 100); // Navigate every 100ms when held
-    }, 300); // Wait 300ms before starting rapid navigation
+        }, 100);
+    }, 300);
 }
 
 // Start holding next
@@ -352,8 +210,8 @@ function startHoldingNextMotion() {
     holdTimeout = setTimeout(() => {
         holdInterval = setInterval(() => {
             loadNextMotion();
-        }, 100); // Navigate every 100ms when held
-    }, 300); // Wait 300ms before starting rapid navigation
+        }, 100);
+    }, 300);
 }
 
 // Stop holding
@@ -371,8 +229,18 @@ function stopHoldingMotion() {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadSecurityStatus();
-    loadMotionData();
-    setInterval(loadMotionData, 30000); // Refresh every 30 seconds
+    
+    // Wait for bar_chart.js to load data
+    setTimeout(() => {
+        displayMotionReading();
+    }, 1000);
+    
+    // Update display when new data is loaded
+    setInterval(() => {
+        if (window.motionReadings && window.motionReadings.length > 0) {
+            displayMotionReading();
+        }
+    }, 31000);
 });
 </script>
 

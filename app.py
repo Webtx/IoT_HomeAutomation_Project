@@ -18,7 +18,7 @@ aio = Client(os.getenv('ADAFRUIT_IO_USERNAME'), os.getenv('ADAFRUIT_IO_KEY'))
 MQTT_BROKER = "io.adafruit.com"
 MQTT_PORT = 1883
 USERNAME = "HappyAnnie"
-KEY = "aio_mIfp76dqLin2BGv9zCJsYRuKPA8M"
+KEY = "aio_bHPT09k2u8UQxhTYOLUAAsRUQNlY"
 
 # Initialize MQTT Client
 mqtt_client = mqtt.Client()
@@ -371,29 +371,58 @@ def get_device_state(device_id):
 
 @app.route('/api/motion-data')
 def get_motion_data():
-    """Get motion sensor data (simulated for now)"""
+    """Get motion sensor data from Neon database"""
     try:
-        from datetime import datetime, timedelta
+        conn = get_db_connection()
+        cursor = conn.cursor()
         
-        # Simulate motion sensor data
-        motion_data = []
-        base_time = datetime.now()
+        # Get motion events from the database in ascending order (oldest first)
+        cursor.execute('''
+            SELECT timestamp, count
+            FROM motion_events
+            ORDER BY timestamp ASC
+        ''')
         
-        for i in range(20):
-            time_offset = timedelta(minutes=i * 5)
-            motion_data.append({
-                'timestamp': (base_time - time_offset).strftime('%Y-%m-%d %H:%M:%S'),
-                'detected': i % 3 == 0,  # Every 3rd reading has motion
-                'value': 1 if i % 3 == 0 else 0,
-                'location': 'Main Entrance'
+        rows = cursor.fetchall()
+        print(f"DEBUG: Found {len(rows)} motion events in database")
+        conn.close()
+        
+        if not rows:
+            print("DEBUG: No motion data found in database")
+            return jsonify({
+                'success': False,
+                'message': 'No motion data available',
+                'data': []
             })
+        
+        # Format the data
+        motion_data = []
+        for row in rows:
+            timestamp_val = row['timestamp']
+            if hasattr(timestamp_val, 'strftime'):
+                timestamp_str = timestamp_val.strftime('%Y-%m-%d %H:%M:%S')
+            else:
+                timestamp_str = str(timestamp_val)
+            
+            motion_data.append({
+                'timestamp': timestamp_str,
+                'count': row['count'],
+                'detected': row['count'] > 0
+            })
+        
+        print(f"DEBUG: Returning {len(motion_data)} motion events")
+        if motion_data:
+            print(f"DEBUG: First event: {motion_data[0]}")
+            print(f"DEBUG: Last event: {motion_data[-1]}")
         
         return jsonify({
             'success': True,
-            'data': list(reversed(motion_data))
+            'data': motion_data
         })
     except Exception as e:
-        print(f"Error getting motion data: {e}")
+        print(f"ERROR getting motion data: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/adafruit/historical')

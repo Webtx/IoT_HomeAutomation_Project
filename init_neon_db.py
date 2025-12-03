@@ -21,6 +21,7 @@ def create_database():
         # Drop existing tables if they exist
         cursor.execute('DROP TABLE IF EXISTS temperature_readings')
         cursor.execute('DROP TABLE IF EXISTS environmental_data')
+        cursor.execute('DROP TABLE IF EXISTS motion_events')
         
         # Create environmental_data table for Lab 08 data
         cursor.execute('''
@@ -33,9 +34,19 @@ def create_database():
             )
         ''')
         
+        # Create motion_events table for security data
+        cursor.execute('''
+            CREATE TABLE motion_events (
+                id SERIAL PRIMARY KEY,
+                timestamp TIMESTAMP NOT NULL,
+                count INTEGER NOT NULL DEFAULT 0
+            )
+        ''')
+        
         print("✅ Database tables created successfully!")
-        print("✅ Ready for Lab 08 environmental data (temperature, humidity, pressure)")
-        print("✅ Data will be populated when Raspberry Pi runs lab08_domisafe_remote.py")
+        print("✅ environmental_data table ready for temperature, humidity, pressure")
+        print("✅ motion_events table ready for motion detection counts")
+        print("✅ Data will be populated when Raspberry Pi runs the monitoring scripts")
         
         conn.commit()
         cursor.close()

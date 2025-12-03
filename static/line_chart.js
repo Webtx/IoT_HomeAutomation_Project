@@ -4,16 +4,20 @@ let currentTimestampIndex = 0;
 let currentDayData = null;
 let holdInterval = null;
 let holdTimeout = null;
+let availableDates = [];
+let currentSelectedDate = null;
 
-// Load all timestamps from database
-function loadAvailableTimestamps() {
+// Load all available dates
+function loadAvailableDates() {
     fetch('/api/available-dates')
     .then(response => response.json())
     .then(result => {
         if (result.success && result.dates.length > 0) {
-            // Get first date and load all timestamps for that date
-            const firstDate = result.dates[0];
-            loadTimestampsForDate(firstDate);
+            availableDates = result.dates;
+            populateDateDropdown();
+            // Load most recent date by default
+            currentSelectedDate = availableDates[0];
+            loadTimestampsForDate(currentSelectedDate);
         }
     })
     .catch(error => {
@@ -21,9 +25,47 @@ function loadAvailableTimestamps() {
     });
 }
 
+// Populate date dropdown
+function populateDateDropdown() {
+    const select = document.getElementById('dateFilter');
+    select.innerHTML = '<option value="">-- Select a Date --</option>';
+    
+    availableDates.forEach(date => {
+        const option = document.createElement('option');
+        option.value = date;
+        option.textContent = date;
+        select.appendChild(option);
+    });
+    
+    // Select the most recent date
+    if (availableDates.length > 0) {
+        select.value = availableDates[0];
+    }
+}
+
+// Load data for selected date
+function loadDataForSelectedDate() {
+    const select = document.getElementById('dateFilter');
+    const selectedDate = select.value;
+    
+    if (selectedDate) {
+        currentSelectedDate = selectedDate;
+        loadTimestampsForDate(selectedDate);
+    }
+}
+
+// Load all data (no date filter)
+function loadAllData() {
+    document.getElementById('dateFilter').value = '';
+    currentSelectedDate = null;
+    loadTimestampsForDate(null);
+}
+
 // Load all timestamps for a specific date
 function loadTimestampsForDate(date) {
-    fetch(`/api/line-data?date=${encodeURIComponent(date)}&sensor=all`)
+    const url = date ? `/api/line-data?date=${encodeURIComponent(date)}&sensor=all` : '/api/line-data?sensor=all';
+    
+    fetch(url)
     .then(response => response.json())
     .then(data => {
         if (data.labels && data.labels.length > 0) {
@@ -34,6 +76,9 @@ function loadTimestampsForDate(date) {
             
             // Load first reading
             loadReadingAtIndex(0);
+        } else {
+            document.getElementById('lineChartContainer').innerHTML = 
+                '<div style="text-align: center; color: #ccc; padding: 2rem;">No data available for this selection.</div>';
         }
     })
     .catch(error => {
@@ -262,5 +307,5 @@ function updateStats(data) {
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('lineChartContainer').style.height = '400px';
-    loadAvailableTimestamps();
+    loadAvailableDates();
 });

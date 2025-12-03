@@ -6,9 +6,18 @@
 <div class="container">
     <div class="chart-container glass">
         <h2>Environmental Monitoring</h2>
-        <p style="color: #ccc; margin-bottom: 2rem;">
+        <p style="color: #ccc; margin-bottom: 1rem;">
             This chart displays temperature, humidity, and pressure readings from your Raspberry Pi sensors.
         </p>
+        
+        <!-- Date Filter -->
+        <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <label style="color: #fff; font-weight: bold;">Filter by Date:</label>
+            <select id="dateFilter" onchange="loadDataForSelectedDate()" style="padding: 0.5rem 1rem; border-radius: 5px; background: rgba(255, 255, 255, 0.1); color: #fff; border: 1px solid rgba(255, 255, 255, 0.3); cursor: pointer;">
+                <option value="">Loading dates...</option>
+            </select>
+            <button class="btn" onclick="loadAllData()" style="padding: 0.5rem 1rem;">Show All Data</button>
+        </div>
         
         <div class="chart-placeholder" id="lineChartContainer">
             <canvas id="lineChart" width="400" height="200"></canvas>
